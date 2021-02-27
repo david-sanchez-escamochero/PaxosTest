@@ -14,8 +14,8 @@ void usage() {
     printf("Param (4) Acceptor port\n");
     printf("Param (5) Learner  port\n");    
     printf("Param (6) Number of nodes\n");
+    printf("Param (7) Name of file\n");
 }
-
 
 int main(int argc, char** argv)
 {

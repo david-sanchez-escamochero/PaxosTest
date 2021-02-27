@@ -9,10 +9,15 @@ void Proposer::start(uint32_t port)
 	message.receiveMessage(str_message);	
 }
 
-void Proposer::prepareRequest(uint32_t proposal_number)
+void Proposer::prepare_request(uint32_t proposal_number)
 {
 }
 
-void Proposer::acceptResquest(Proposal* proposal)
+void Proposer::accept_resquest(Proposal* proposal)
 {
+}
+
+void Proposer::client_request(std::string) 
+{
+
 }

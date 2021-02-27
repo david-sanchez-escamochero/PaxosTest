@@ -8,8 +8,9 @@ class Proposer
 {
 public:
 	void start(uint32_t port);
-	void prepareRequest(uint32_t proposal_number);
-	void acceptResquest(Proposal *proposal);
+	void prepare_request(uint32_t proposal_number);
+	void accept_resquest(Proposal *proposal);
+	void client_request(std::string);
 
 private:
 	Message message;
