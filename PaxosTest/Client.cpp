@@ -4,12 +4,13 @@
 #include <fstream>
 
 
-void Client::start(std::string file_name, Proposer* proposer)
+void Client::start(std::string file_name_, Proposer* proposer_)
 {
-	this->file_name = file_name;	
-    if (proposer != NULL) {
+	file_name_ = file_name_;	
+    proposer_ = proposer_;
+    if (proposer_ != NULL) {
 
-        if (file_name != "") {
+        if (file_name_ != "") {
             read_file();
         }
         else
@@ -22,16 +23,16 @@ void Client::start(std::string file_name, Proposer* proposer)
 
 void Client::read_file() {
 
-    if (file_name != "") {
+    if (file_name_ != "") {
         std::string line;
         //std::ifstream infile(file_name + ".txt");
-        std::ifstream infile("C:\\Users\\ASUS_PORTATIL\\source\\repos\\PaxosTest\\Debug\\" + file_name + ".txt");
+        std::ifstream infile("C:\\Users\\ASUS_PORTATIL\\source\\repos\\PaxosTest\\Debug\\" + file_name_ + ".txt");
         
     
         while (std::getline(infile, line))
         {
             printf("Name: %s\r\n", line.c_str());
-            proposer->client_request(line);            
+            proposer_->client_request(line);            
         }
     }
     else

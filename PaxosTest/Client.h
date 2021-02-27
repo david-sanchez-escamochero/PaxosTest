@@ -10,7 +10,7 @@ public:
 	void read_file();
 	void send_request();
 private:
-	std::string file_name;
-	Proposer* proposer;
+	std::string file_name_;
+	Proposer* proposer_;
 };
 
