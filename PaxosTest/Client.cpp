@@ -1,6 +1,6 @@
 #include "Client.h"
 
-void Client::start()
+void Client::start(std::string file_name)
 {
 
 }

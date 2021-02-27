@@ -8,7 +8,7 @@
 #include "Message.h"
 
 
-Board::Board(uint32_t id, std::string name, uint32_t port_proposer, uint32_t port_acceptor, uint32_t port_learner, uint16_t number_of_nodes) {
+Board::Board(uint32_t id, std::string name, uint32_t port_proposer, uint32_t port_acceptor, uint32_t port_learner, uint16_t number_of_nodes, std::string file_name) {
 	this->id = id;
 	this->name = name;
 	this->port_proposer = port_proposer;
@@ -26,6 +26,7 @@ void Board::start()
 	printf("Port acceptor: %d\n", port_acceptor);
 	printf("Port learner: %d\n", port_learner);	
 	printf("Number of nodes: %d\n", number_of_nodes);
+	printf("File name: %s\n", file_name.c_str());
 
 	Client	 client; 
 	Proposer proposer; 
@@ -33,7 +34,7 @@ void Board::start()
 	Learner	 learner;
 	Message  message;
 
-	client.start();
+	client.start(file_name);
 	proposer.start(port_proposer);
 	acceptor.start(port_acceptor);
 	learner.start(port_learner);
