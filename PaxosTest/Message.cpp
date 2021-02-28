@@ -21,7 +21,7 @@ int Message::sendMessage(Proposal *proposal, unsigned short port)
     resp = WSAStartup(MAKEWORD(1, 0), &wsaData);
     if (resp) {
         printf("Error al inicializar socket\n");
-        return -1;
+        return MSG_ERROR_INITIALIZATION_SOCKET;
     }
 
     //Obtenemos la IP del servidor... en este caso
@@ -30,14 +30,14 @@ int Message::sendMessage(Proposal *proposal, unsigned short port)
 
     if (!hp) {
         printf("No se ha encontrado servidor...\n");
-        WSACleanup(); return WSAGetLastError();
+        WSACleanup(); return MSG_ERROR_UNKNOWN_SERVER;
     }
 
     // Creamos el socket...
     conn_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (conn_socket == INVALID_SOCKET) {
         printf("Error al crear socket\n");
-        WSACleanup(); return WSAGetLastError();
+        WSACleanup(); return MSG_ERROR_CREATE_SOCKET;
     }
 
     memset(&server, 0, sizeof(server));
@@ -49,23 +49,12 @@ int Message::sendMessage(Proposal *proposal, unsigned short port)
     if (connect(conn_socket, (struct sockaddr*) & server, sizeof(server)) == SOCKET_ERROR) {
         printf("Fallo al conectarse con el servidor\n");
         closesocket(conn_socket);
-        WSACleanup(); return WSAGetLastError();
+        WSACleanup(); return MSG_ERROR_FAILED_TO_CONNECT_SERVER;
     }
-    //printf("Conexión establecida con: %s\n", inet_ntoa(server.sin_addr));
-
-    memcpy(SendBuff, reinterpret_cast<const char *>(proposal), sizeof(Proposal));
-    //strcpy(SendBuff, "Hola servidor... .P");
-    //Enviamos y recibimos datos...
-    //printf("Enviando Mensaje... \n"); 
-    printf("[Sent]Proposal[%d.%d, %s]\n", proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
-    send(conn_socket, SendBuff, sizeof(Proposal), 0);
-    //printf("Datos enviados: %s \n", SendBuff);
-
-    //printf("Recibiendo Mensaje... \n");
-    //recv(conn_socket, RecvBuff, sizeof(RecvBuff), 0);
-    //printf("Datos recibidos: %s \n", RecvBuff);
-
     
+    memcpy(SendBuff, reinterpret_cast<const char *>(proposal), sizeof(Proposal));
+    printf("[Sent]Proposal[%d.%d, %s]\n", proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
+    send(conn_socket, SendBuff, sizeof(Proposal), 0);    
 
     // Cerramos el socket y liberamos la DLL de sockets
     closesocket(conn_socket);
@@ -77,7 +66,7 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port)
 {
     WSADATA wsaData;
     SOCKET conn_socket, comm_socket;
-    SOCKET comunicacion;
+    //SOCKET comunicacion;
     struct sockaddr_in server;
     struct sockaddr_in client;
     struct hostent* hp;
@@ -87,7 +76,7 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port)
     resp = WSAStartup(MAKEWORD(1, 0), &wsaData);
     if (resp) {
         printf("Error al inicializar socket\n");
-        return resp;
+        return MSG_ERROR_INITIALIZATION_SOCKET;
     }
 
     //Obtenemos la IP que usará nuestro servidor... 
@@ -96,14 +85,14 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port)
 
     if (!hp) {
         printf("No se ha encontrado servidor...\n");
-        WSACleanup(); return WSAGetLastError();
+        WSACleanup(); return MSG_ERROR_UNKNOWN_SERVER;
     }
 
     // Creamos el socket...
     conn_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (conn_socket == INVALID_SOCKET) {
         printf("Error al crear socket\n");
-        WSACleanup(); return WSAGetLastError();
+        WSACleanup(); return MSG_ERROR_CREATE_SOCKET;
     }
 
     memset(&server, 0, sizeof(server));
@@ -116,13 +105,13 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port)
     if (resp == SOCKET_ERROR) {
         printf("Error al asociar puerto e ip al socket\n");
         closesocket(conn_socket); WSACleanup();
-        return WSAGetLastError();
+        return MSG_ERROR_TO_ASSOCIATE_PORT_AND_IP_SOCKET;
     }
 
     if (listen(conn_socket, 1) == SOCKET_ERROR) {
         printf("Error al habilitar conexiones entrantes\n");
         closesocket(conn_socket); WSACleanup();
-        return WSAGetLastError();
+        return MSG_ERROR_TO_ENABLE_INGOING_CONNECTIONS;
     }
 
     // Aceptamos conexiones entrantes
@@ -132,18 +121,12 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port)
     if (comm_socket == INVALID_SOCKET) {
         printf("Error al aceptar conexión entrante\n");
         closesocket(conn_socket); WSACleanup();
-        return WSAGetLastError();
+        return MSG_ERROR_TO_ACCEPT_INGOING_CONNECTIONS;
     }
-    //printf("Conexión entrante desde: %s\n", inet_ntoa(client.sin_addr));
-
+    
     // Como no vamos a aceptar más conexiones cerramos el socket escucha
     closesocket(conn_socket);
-
-    //strcpy(SendBuff, "Hola Cliente... .P");
-    ////Enviamos y recibimos datos...
-    //printf("Enviando Mensaje... \n");
-    //send(comm_socket, SendBuff, sizeof(SendBuff), 0);
-    //printf("Datos enviados: %s \n", SendBuff);
+    
 
     //printf("Recibiendo Mensaje... \n");
     recv(comm_socket, RecvBuff, sizeof(RecvBuff), 0);

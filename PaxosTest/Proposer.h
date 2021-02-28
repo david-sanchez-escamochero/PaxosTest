@@ -7,10 +7,10 @@
 class Proposer
 {
 public:
-	void start(uint32_t port_send_proposer, uint32_t  port_receive_proposer, uint32_t id);
+	void start(uint32_t id);
 	uint32_t  prepare_request(std::string value);
 	void accept_resquest(Proposal *proposal);
-	void client_request(std::string value);
+	bool client_request(std::string value);
 	uint32_t get_proposal_number();
 	void response_to_prepare_request();
 

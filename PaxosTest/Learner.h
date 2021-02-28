@@ -6,7 +6,7 @@
 class Learner
 {
 public:
-	void start(uint32_t port_send, uint32_t  port_receive, uint32_t id);
+	void start(uint32_t id);
 private:
 	uint32_t id_;
 	uint32_t proposal_number_;

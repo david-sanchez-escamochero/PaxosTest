@@ -163,6 +163,7 @@
     <ClInclude Include="Client.h" />
     <ClInclude Include="Learner.h" />
     <ClInclude Include="Message.h" />
+    <ClInclude Include="PaxosDefs.h" />
     <ClInclude Include="Proposal.h" />
     <ClInclude Include="Proposer.h" />
   </ItemGroup>

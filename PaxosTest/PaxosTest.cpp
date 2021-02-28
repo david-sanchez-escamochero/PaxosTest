@@ -19,11 +19,10 @@ void usage() {
 
 int main(int argc, char** argv)
 {
-    if (argc < 6)
+    if (argc < 3)
         usage();
     else {        
-        Board board(std::stoi(argv[1]), argv[2], std::stoi(argv[3]), std::stoi(argv[4]), 
-                    std::stoi(argv[5]), std::stoi(argv[6]), std::stoi(argv[7]), std::stoi(argv[8]), std::stoi(argv[9]), argv[10]);
+        Board board(std::stoi(argv[1]), argv[2], argv[3]);
         board.start();
     }
 }

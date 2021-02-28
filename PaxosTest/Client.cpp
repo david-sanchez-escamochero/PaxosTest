@@ -4,10 +4,10 @@
 #include <fstream>
 
 
-void Client::start(std::string file_name_, Proposer* proposer_)
+void Client::start(std::string file_name, Proposer* proposer)
 {
-	file_name_ = file_name_;	
-    proposer_ = proposer_;
+	file_name_ = file_name;	
+    proposer_ = proposer;
     if (proposer_ != NULL) {
 
         if (file_name_ != "") {
@@ -24,15 +24,14 @@ void Client::start(std::string file_name_, Proposer* proposer_)
 void Client::read_file() {
 
     if (file_name_ != "") {
-        std::string line;
+        std::string value;
         //std::ifstream infile(file_name + ".txt");
         std::ifstream infile("C:\\Users\\ASUS_PORTATIL\\source\\repos\\PaxosTest\\Debug\\" + file_name_ + ".txt");
         
     
-        while (std::getline(infile, line))
-        {
-            printf("Name: %s\r\n", line.c_str());
-            proposer_->client_request(line);            
+        while (std::getline(infile, value))
+        {            
+            proposer_->client_request(value);            
         }
     }
     else

@@ -2,6 +2,14 @@
 #include "Proposal.h"
 
 
+Proposal::Proposal() {
+	value_  = "";
+	proposal_number_ = 0;
+	id_ = 0;
+	none_ = false;
+	nack_ = false;
+}
+
 void Proposal::set_value(std::string value)
 {
 	value_ = value;
@@ -29,4 +37,20 @@ uint32_t Proposal::get_proposal_number()
 
 uint32_t Proposal::get_id() {
 	return id_;
+}
+
+void Proposal::set_none(bool none) {
+	none_ = none;
+}
+
+bool Proposal::get_none() {
+	return none_;
+}
+
+void Proposal::set_nack(bool nack) {
+	nack_ = nack;
+}
+
+bool Proposal::get_nack() {
+	return nack_;
 }
