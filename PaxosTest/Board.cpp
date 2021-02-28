@@ -37,6 +37,13 @@ void Board::start()
 	printf("Number of nodes: %d\n", number_of_nodes_);
 	printf("File name: %s\n", file_name_.c_str());
 
+	Proposal proposal;
+	proposal.set_id(id_);
+	proposal.set_proposal_number(21);
+	proposal.set_value("hello");
+	message_.sendMessage(&proposal, port_receive_proposer_);
+	
+	//message_.receiveMessage(&proposal, port_receive_proposer_);
 
 	
 	proposer_.start(port_send_proposer_, port_receive_proposer_, id_);

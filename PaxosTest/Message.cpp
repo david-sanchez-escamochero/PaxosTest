@@ -8,7 +8,7 @@ void Message::start() {
     
 }
 
-int Message::sendMessage(Proposal proposal, unsigned short port)
+int Message::sendMessage(Proposal *proposal, unsigned short port)
 {
     
     WSADATA wsaData;
@@ -51,17 +51,19 @@ int Message::sendMessage(Proposal proposal, unsigned short port)
         closesocket(conn_socket);
         WSACleanup(); return WSAGetLastError();
     }
-    printf("Conexión establecida con: %s\n", inet_ntoa(server.sin_addr));
+    //printf("Conexión establecida con: %s\n", inet_ntoa(server.sin_addr));
 
-    strcpy(SendBuff, "Hola servidor... .P");
+    memcpy(SendBuff, reinterpret_cast<const char *>(proposal), sizeof(Proposal));
+    //strcpy(SendBuff, "Hola servidor... .P");
     //Enviamos y recibimos datos...
-    printf("Enviando Mensaje... \n");
-    send(conn_socket, SendBuff, sizeof(SendBuff), 0);
-    printf("Datos enviados: %s \n", SendBuff);
+    //printf("Enviando Mensaje... \n"); 
+    printf("[Sent]Proposal[%d.%d, %s]\n", proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
+    send(conn_socket, SendBuff, sizeof(Proposal), 0);
+    //printf("Datos enviados: %s \n", SendBuff);
 
-    printf("Recibiendo Mensaje... \n");
-    recv(conn_socket, RecvBuff, sizeof(RecvBuff), 0);
-    printf("Datos recibidos: %s \n", RecvBuff);
+    //printf("Recibiendo Mensaje... \n");
+    //recv(conn_socket, RecvBuff, sizeof(RecvBuff), 0);
+    //printf("Datos recibidos: %s \n", RecvBuff);
 
     
 
@@ -71,7 +73,7 @@ int Message::sendMessage(Proposal proposal, unsigned short port)
     return EXIT_SUCCESS;
 }
 
-int Message::receiveMessage(std::string message)
+int Message::receiveMessage(Proposal *proposal, unsigned short port)
 {
     WSADATA wsaData;
     SOCKET conn_socket, comm_socket;
@@ -107,7 +109,7 @@ int Message::receiveMessage(std::string message)
     memset(&server, 0, sizeof(server));
     memcpy(&server.sin_addr, hp->h_addr, hp->h_length);
     server.sin_family = hp->h_addrtype;
-    server.sin_port = htons(6000);
+    server.sin_port = htons(port);
 
     // Asociamos ip y puerto al socket
     resp = bind(conn_socket, (struct sockaddr*) & server, sizeof(server));
@@ -124,7 +126,7 @@ int Message::receiveMessage(std::string message)
     }
 
     // Aceptamos conexiones entrantes
-    printf("Esperando conexiones entrantes... \n");
+    //printf("Esperando conexiones entrantes... \n");
     stsize = sizeof(struct sockaddr);
     comm_socket = accept(conn_socket, (struct sockaddr*) & client, &stsize);
     if (comm_socket == INVALID_SOCKET) {
@@ -132,23 +134,21 @@ int Message::receiveMessage(std::string message)
         closesocket(conn_socket); WSACleanup();
         return WSAGetLastError();
     }
-    printf("Conexión entrante desde: %s\n", inet_ntoa(client.sin_addr));
+    //printf("Conexión entrante desde: %s\n", inet_ntoa(client.sin_addr));
 
     // Como no vamos a aceptar más conexiones cerramos el socket escucha
     closesocket(conn_socket);
 
-    strcpy(SendBuff, "Hola Cliente... .P");
-    //Enviamos y recibimos datos...
-    printf("Enviando Mensaje... \n");
-    send(comm_socket, SendBuff, sizeof(SendBuff), 0);
-    printf("Datos enviados: %s \n", SendBuff);
+    //strcpy(SendBuff, "Hola Cliente... .P");
+    ////Enviamos y recibimos datos...
+    //printf("Enviando Mensaje... \n");
+    //send(comm_socket, SendBuff, sizeof(SendBuff), 0);
+    //printf("Datos enviados: %s \n", SendBuff);
 
-    printf("Recibiendo Mensaje... \n");
+    //printf("Recibiendo Mensaje... \n");
     recv(comm_socket, RecvBuff, sizeof(RecvBuff), 0);
-    printf("Datos recibidos: %s \n", RecvBuff);
-
-    
-
+    proposal = reinterpret_cast<Proposal*>(RecvBuff);
+    printf("[Received]Proposal[%d.%d, %s]\n", proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
     // Cerramos el socket de la comunicacion
     closesocket(comm_socket);
 
