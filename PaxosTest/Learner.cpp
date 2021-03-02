@@ -3,6 +3,9 @@
 #include "Message.h"
 #include "PaxosDefs.h"
 
+
+
+
 void Learner::start(uint32_t id)
 {
 	port_send_ = PORT_BASE + PORT_LEARNER_SUFIX + PORT_SENDER_SUFIX + id;
@@ -15,7 +18,7 @@ void Learner::receive_decision()
 {
 	while (true) {
 		Proposal proposal;
-		int32_t result = message_.receiveMessage(&proposal, port_receive_);
+		int32_t result = message_.receiveMessage(&proposal, port_receive_, std::string(LEARNER) + "." + std::to_string(id_));
 		if (result != MSG_SUCCESS) {
 			printf("Learner::receive_decision - FAILED!!! receive message %d\r\n", result);
 		}
@@ -30,7 +33,7 @@ void Learner::receive_decision()
 
 		if (count_decision_received_ >= MAJORITY) {
 			// Guardar propuesta. 
-			printf("Propesta ACEPTADA!!!! [%d, %s]", proposal.get_proposal_number(), proposal.get_value().c_str());
+			printf("Propuesta ACEPTADA!!!! [%d, %s]", proposal.get_proposal_number(), proposal.get_value().c_str());
 		}
 	}
 }

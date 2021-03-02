@@ -26,7 +26,7 @@ void Client::read_file() {
     if (file_name_ != "") {
         std::string value;
         //std::ifstream infile(file_name + ".txt");
-        std::ifstream infile("C:\\Users\\ASUS_PORTATIL\\source\\repos\\PaxosTest\\Debug\\" + file_name_ + ".txt");
+        std::ifstream infile(".\\" + file_name_ + ".txt");
         
     
         while (std::getline(infile, value))

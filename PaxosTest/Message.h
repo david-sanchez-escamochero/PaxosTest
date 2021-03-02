@@ -17,8 +17,8 @@
 class Message
 {
 public: 
-	int sendMessage(Proposal *proposal, unsigned short port);
-	int receiveMessage(Proposal *proposal, unsigned short port);
+	int sendMessage(Proposal* proposal, unsigned short port, std::string sender, std::string action, std::string receiver);
+	int receiveMessage(Proposal *proposal, unsigned short port, std::string receiver);
 	void start();
 private: 
 	char SendBuff[512], RecvBuff[512];

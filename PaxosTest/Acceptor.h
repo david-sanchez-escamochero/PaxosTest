@@ -25,7 +25,7 @@ private:
 	Proposal proposal_;
 	std::string value_;
 	bool there_is_an_accepted_request_;
-	uint32_t count_accepted_request; 
+	uint32_t count_accepted_request_; 
 
 
 	std::mutex mu_;

@@ -8,7 +8,7 @@ void Message::start() {
     
 }
 
-int Message::sendMessage(Proposal *proposal, unsigned short port)
+int Message::sendMessage(Proposal *proposal, unsigned short port, std::string sender, std::string action, std::string receiver)
 {
     
     WSADATA wsaData;
@@ -20,7 +20,7 @@ int Message::sendMessage(Proposal *proposal, unsigned short port)
     //Inicializamos la DLL de sockets
     resp = WSAStartup(MAKEWORD(1, 0), &wsaData);
     if (resp) {
-        printf("Error al inicializar socket\n");
+        printf("[>>>>> Sent(%s(%s) -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Error socket initialization)\r\n", sender.c_str(), action.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         return MSG_ERROR_INITIALIZATION_SOCKET;
     }
 
@@ -28,15 +28,15 @@ int Message::sendMessage(Proposal *proposal, unsigned short port)
     // localhost indica nuestra propia máquina...
     hp = (struct hostent*)gethostbyname("localhost");
 
-    if (!hp) {
-        printf("No se ha encontrado servidor...\n");
+    if (!hp) {        
+        printf("[>>>>> Sent(%s(%s) -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Server not found)\r\n", sender.c_str(), action.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         WSACleanup(); return MSG_ERROR_UNKNOWN_SERVER;
     }
 
     // Creamos el socket...
     conn_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (conn_socket == INVALID_SOCKET) {
-        printf("Error al crear socket\n");
+        printf("[>>>>> Sent(%s(%s) -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Wrong socket created)\r\n", sender.c_str(), action.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         WSACleanup(); return MSG_ERROR_CREATE_SOCKET;
     }
 
@@ -47,13 +47,14 @@ int Message::sendMessage(Proposal *proposal, unsigned short port)
 
     // Nos conectamos con el servidor...
     if (connect(conn_socket, (struct sockaddr*) & server, sizeof(server)) == SOCKET_ERROR) {
-        printf("Fallo al conectarse con el servidor\n");
+        printf("[>>>>> Sent(%s(%s) -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Failed to connect server)\r\n", sender.c_str(), action.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         closesocket(conn_socket);
         WSACleanup(); return MSG_ERROR_FAILED_TO_CONNECT_SERVER;
     }
     
-    memcpy(SendBuff, reinterpret_cast<const char *>(proposal), sizeof(Proposal));
-    printf("[Sent]Proposal[%d.%d, %s]\n", proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
+    memcpy(SendBuff, reinterpret_cast<const char *>(proposal), sizeof(Proposal));    
+            
+    printf("[>>>>> Sent(%s(%s) -> %s(%d))    - OK] Proposal[%d. %d, %s]\r\n", sender.c_str(), action.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
     send(conn_socket, SendBuff, sizeof(Proposal), 0);    
 
     // Cerramos el socket y liberamos la DLL de sockets
@@ -62,7 +63,7 @@ int Message::sendMessage(Proposal *proposal, unsigned short port)
     return EXIT_SUCCESS;
 }
 
-int Message::receiveMessage(Proposal *proposal, unsigned short port)
+int Message::receiveMessage(Proposal *proposal, unsigned short port, std::string receiver)
 {
     WSADATA wsaData;
     SOCKET conn_socket, comm_socket;
@@ -75,7 +76,7 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port)
     //Inicializamos la DLL de sockets
     resp = WSAStartup(MAKEWORD(1, 0), &wsaData);
     if (resp) {
-        printf("Error al inicializar socket\n");
+        printf("[<<<<< Received(%s(%d)) - FAILED] Proposal[%d. %d, %s](Error socket initialization)\r\n", receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         return MSG_ERROR_INITIALIZATION_SOCKET;
     }
 
@@ -83,15 +84,15 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port)
     // en este caso localhost indica nuestra propia máquina...
     hp = (struct hostent*)gethostbyname("localhost");
 
-    if (!hp) {
-        printf("No se ha encontrado servidor...\n");
+    if (!hp) {        
+        printf("[<<<<< Received(%s(%d)) - FAILED] Proposal[%d. %d, %s](Server not found)\r\n", receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         WSACleanup(); return MSG_ERROR_UNKNOWN_SERVER;
     }
 
     // Creamos el socket...
     conn_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (conn_socket == INVALID_SOCKET) {
-        printf("Error al crear socket\n");
+        printf("[<<<<< Received(%s(%d)) - FAILED] Proposal[%d. %d, %s](Wrong socket created)\r\n", receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         WSACleanup(); return MSG_ERROR_CREATE_SOCKET;
     }
 
@@ -103,23 +104,23 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port)
     // Asociamos ip y puerto al socket
     resp = bind(conn_socket, (struct sockaddr*) & server, sizeof(server));
     if (resp == SOCKET_ERROR) {
-        printf("Error al asociar puerto e ip al socket\n");
+        printf("[<<<<< Received(%s(%d)) - FAILED] Proposal[%d. %d, %s](Failed to connect server)\r\n", receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         closesocket(conn_socket); WSACleanup();
         return MSG_ERROR_TO_ASSOCIATE_PORT_AND_IP_SOCKET;
     }
 
-    if (listen(conn_socket, 1) == SOCKET_ERROR) {
-        printf("Error al habilitar conexiones entrantes\n");
+    if (listen(conn_socket, 1) == SOCKET_ERROR) {        
+        printf("[<<<<< Received(%s(%d)) - FAILED] Proposal[%d. %d, %s](Failed to connect server)\r\n", receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         closesocket(conn_socket); WSACleanup();
         return MSG_ERROR_TO_ENABLE_INGOING_CONNECTIONS;
     }
 
     // Aceptamos conexiones entrantes
-    //printf("Esperando conexiones entrantes... \n");
+    //printf("Esperando conexiones entrantes... \r\n");
     stsize = sizeof(struct sockaddr);
     comm_socket = accept(conn_socket, (struct sockaddr*) & client, &stsize);
     if (comm_socket == INVALID_SOCKET) {
-        printf("Error al aceptar conexión entrante\n");
+        printf("[<<<<< Received(%s(%d)) - FAILED] Proposal[%d. %d, %s](Failed to accept ingoing conection)\r\n", receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         closesocket(conn_socket); WSACleanup();
         return MSG_ERROR_TO_ACCEPT_INGOING_CONNECTIONS;
     }
@@ -128,10 +129,16 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port)
     closesocket(conn_socket);
     
 
-    //printf("Recibiendo Mensaje... \n");
+    //printf("Recibiendo Mensaje... \r\n");
     recv(comm_socket, RecvBuff, sizeof(RecvBuff), 0);
-    proposal = reinterpret_cast<Proposal*>(RecvBuff);
-    printf("[Received]Proposal[%d.%d, %s]\n", proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
+    Proposal *proposal_aux = reinterpret_cast<Proposal*>(RecvBuff);            
+    proposal->set_id(proposal_aux->get_id());
+    proposal->set_nack(proposal_aux->get_nack());
+    proposal->set_none(proposal_aux->get_none());
+    proposal->set_proposal_number(proposal_aux->get_proposal_number());
+    proposal->set_value(proposal_aux->get_value());
+    
+    printf("[<<<<< Received(%s(%d)) - OK] Proposal[%d. %d, %s]\r\n", receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
     // Cerramos el socket de la comunicacion
     closesocket(comm_socket);
 
