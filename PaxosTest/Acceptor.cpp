@@ -4,6 +4,7 @@
 #include "PaxosDefs.h"
 #include <thread>
 
+
 void Acceptor::start(uint32_t id)
 {
 	port_send_ = PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_SENDER_SUFIX + id;
@@ -13,17 +14,17 @@ void Acceptor::start(uint32_t id)
 	std::thread thread_receive_prepare_request(&Acceptor::receive_prepare_request, this);
 	thread_receive_prepare_request.detach();
 
-	std::thread thread_accept_request(&Acceptor::accept_request, this);
+	std::thread thread_accept_request(&Acceptor::receive_accept_request, this);
 	thread_accept_request.detach();
 
 }
 
 
 
-void Acceptor::response_to_prepare_request(Proposal *proposal)
+void Acceptor::send_response_to_prepare_request(Proposal *proposal)
 {
 	// Si no hay nada procesandose...
-	if (!accepted_request)
+	if (!there_is_an_accepted_request_)
 		proposal->set_none(true);
 	else {
 		proposal->set_value(value_);
@@ -35,13 +36,10 @@ void Acceptor::response_to_prepare_request(Proposal *proposal)
 
 }
 
-void Acceptor::decision(Proposal* proposal)
-{
 
-}
 
 // La propuesta es menor que las anteriores.
-void Acceptor::nack_prepare_request(Proposal* proposal) {
+void Acceptor::send_nack_prepare_request(Proposal* proposal) {
 
 	proposal->set_nack(true);
 	if (message_.sendMessage(proposal, PORT_BASE + PORT_PROPOSER_SUFIX + PORT_RECEIVER1_SUFIX + proposal->get_id()) != MSG_SUCCESS)
@@ -56,25 +54,59 @@ void Acceptor::receive_prepare_request()
 		if (result != MSG_SUCCESS) {
 			printf("Acceptor::receive_prepare_request - FAILED!!! receive message %d\r\n", result);
 		}
-		if (proposal.get_proposal_number() > proposal_number_) {
+		else if (proposal.get_proposal_number() > proposal_number_) {
 			proposal_number_ = proposal.get_proposal_number();
-			response_to_prepare_request(&proposal);
+			send_response_to_prepare_request(&proposal);
 		}
-		else {
-			nack_prepare_request(&proposal);
+		else if (proposal.get_proposal_number() <=  proposal_number_) {
+			send_nack_prepare_request(&proposal);
 		}
 	}
 }
 
-void Acceptor::accept_request()
+void Acceptor::receive_accept_request()
 {
 	while (true) {
 		Proposal proposal;
 		int32_t result = message_.receiveMessage(&proposal, port_receive2_);
 
 		count_accepted_request++;
-		if (count_accepted_request >= MAJORITY)
-			accepted_request = true;
+		if (count_accepted_request >= MAJORITY) {
+			there_is_an_accepted_request_ = true;
+			int send_decision_sent_without_error = send_decision(&proposal);
+			printf("[SENT Decision] - OK %d/%d", send_decision_sent_without_error, NUM_NODES);
+			if (send_decision_sent_without_error >= MAJORITY) {
+				// Ya podemos pasar a otra cosa. 
+
+			}
+		}
 	}
 }
 
+int Acceptor::send_decision(Proposal* proposal) 
+{		
+	int send_decision_sent_without_error = 0;
+	// El send_decision tiene que ser enviado a todos los Learners. 
+	for (int id_node = 0; id_node < NUM_NODES; id_node++) {
+		if (message_.receiveMessage(proposal, PORT_BASE + PORT_LEARNER_SUFIX + PORT_RECEIVER1_SUFIX + id_node) != MSG_SUCCESS) {
+			printf("Acceptor::send_decision - FAILED!!! to send_decision id:%d, port:%d\n", id_, PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_RECEIVER1_SUFIX + id_node);
+		}
+		else {
+			send_decision_sent_without_error++;
+		}
+	}
+	return send_decision_sent_without_error;
+}
+
+
+
+bool Acceptor::get_there_is_an_accepted_request()
+{	
+	return there_is_an_accepted_request_;
+}
+
+void Acceptor::set_there_is_an_accepted_request(bool there_is_an_accepted_request)
+{
+	std::lock_guard<std::mutex> guard(mu_); // RAII
+		there_is_an_accepted_request_ = there_is_an_accepted_request;
+}

@@ -27,9 +27,9 @@ uint32_t Proposer::prepare_request(std::string value)
 	proposal.set_proposal_number(proposal_number_);
 
 	// El prepare_request tiene que ser enviado a todos los Acceptors. 
-	for (int count = 0; count < NUM_NODES; count++) {
-		if(message_.sendMessage(&proposal, PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_RECEIVER1_SUFIX + count)) {
-			printf("Proposer::prepare_request - FAILED!!! to prepare_request id:%d, port:%d\n", id_, PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_RECEIVER1_SUFIX + count);
+	for (int id_node = 0; id_node < NUM_NODES; id_node++) {
+		if(message_.sendMessage(&proposal, PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_RECEIVER1_SUFIX + id_node)) {
+			printf("Proposer::prepare_request - FAILED!!! to prepare_request id:%d, port:%d\n", id_, PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_RECEIVER1_SUFIX + id_node);
 		}
 		else {
 			prepare_request_sent_without_error++;
