@@ -18,7 +18,7 @@ void Learner::receive_decision()
 {
 	while (true) {
 		Proposal proposal;
-		int32_t result = message_.receiveMessage(&proposal, port_receive_, std::string(LEARNER) + "." + std::to_string(id_));
+		int32_t result = message_.receiveMessage(&proposal, port_receive_, "[" + std::string(ACTION_DECISION) + "]" + std::string(LEARNER) + "." + std::to_string(id_));
 		if (result != MSG_SUCCESS) {
 			printf("Learner::receive_decision - FAILED!!! receive message %d\r\n", result);
 		}

@@ -19,6 +19,7 @@ void Acceptor::start(uint32_t id)
 	thread_accept_request.detach();
 
 	count_accepted_request_ = 0;
+	there_is_an_accepted_request_ = false;
 }
 
 
@@ -32,6 +33,7 @@ void Acceptor::send_response_to_prepare_request(Proposal *proposal)
 	else {
 		proposal->set_value(value_);
 		proposal->set_proposal_number(proposal_number_);
+		proposal->set_none(false);
 	}
 
 	if (message_.sendMessage(proposal, PORT_BASE + PORT_PROPOSER_SUFIX + PORT_RECEIVER1_SUFIX + proposal->get_id(), std::string(ACCEPTOR) + "." + std::to_string(id_), ACTION_RESPONSE_TO_PREPARE_REQUEST, std::string(PROPOSER) + "." + std::to_string(proposal->get_id())) != MSG_SUCCESS)
@@ -53,7 +55,7 @@ void Acceptor::receive_prepare_request()
 {
 	while (true) {
 		Proposal proposal;
-		int32_t result = message_.receiveMessage(&proposal, port_receive1_, std::string(ACCEPTOR) + "." + std::to_string(id_));
+		int32_t result = message_.receiveMessage(&proposal, port_receive1_, "[" + std::string(ACTION_PREPARE_REQUEST) + "]" + std::string(ACCEPTOR) + "." + std::to_string(id_));
 		if (result != MSG_SUCCESS) {
 			printf("Acceptor::receive_prepare_request - FAILED!!! receive message %d\r\n", result);
 		}
@@ -71,13 +73,13 @@ void Acceptor::receive_accept_request()
 {	
 	while (true) {
 		Proposal proposal;
-		int32_t result = message_.receiveMessage(&proposal, port_receive2_, std::string(ACCEPTOR) + "." + std::to_string(id_));
+		int32_t result = message_.receiveMessage(&proposal, port_receive2_, "[" + std::string(ACTION_ACCEPT_REQUEST) + "]" + std::string(ACCEPTOR) + "." + std::to_string(id_));
 
 		count_accepted_request_++;
 		if (count_accepted_request_ >= MAJORITY) {
 			there_is_an_accepted_request_ = true;
 			int send_decision_sent_without_error = send_decision(&proposal);
-			printf("[SENT Decision] - OK %d/%d", send_decision_sent_without_error, NUM_NODES);
+			printf("[SENT Decision] - OK %d/%d\r\n", send_decision_sent_without_error, NUM_NODES);
 			if (send_decision_sent_without_error >= MAJORITY) {
 				// Ya podemos pasar a otra cosa. 
 				send_decision(&proposal);
@@ -92,7 +94,7 @@ int Acceptor::send_decision(Proposal* proposal)
 	int send_decision_sent_without_error = 0;
 	// El send_decision tiene que ser enviado a todos los Learners. 
 	for (int id_node = 0; id_node < NUM_NODES; id_node++) {
-		if (message_.receiveMessage(proposal, PORT_BASE + PORT_LEARNER_SUFIX + PORT_RECEIVER1_SUFIX + id_node, std::string(ACCEPTOR) + "." + std::to_string(id_)) != MSG_SUCCESS) {
+		if (message_.sendMessage(proposal, PORT_BASE + PORT_LEARNER_SUFIX + PORT_RECEIVER1_SUFIX + id_node, std::string(ACCEPTOR) + "." + std::to_string(id_), ACTION_RESPONSE_TO_PREPARE_REQUEST, std::string(LEARNER) + "." + std::to_string(id_node)) != MSG_SUCCESS) {
 			printf("Acceptor::send_decision - FAILED!!! to send_decision id:%d, port:%d\n", id_, PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_RECEIVER1_SUFIX + id_node);
 		}
 		else {

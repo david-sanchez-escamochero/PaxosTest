@@ -20,7 +20,7 @@ int Message::sendMessage(Proposal *proposal, unsigned short port, std::string se
     //Inicializamos la DLL de sockets
     resp = WSAStartup(MAKEWORD(1, 0), &wsaData);
     if (resp) {
-        printf("[>>>>> Sent(%s(%s) -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Error socket initialization)\r\n", sender.c_str(), action.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
+        printf("[>>>>> Sent([%s]%s -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Error socket initialization)\r\n", action.c_str(), sender.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         return MSG_ERROR_INITIALIZATION_SOCKET;
     }
 
@@ -29,14 +29,14 @@ int Message::sendMessage(Proposal *proposal, unsigned short port, std::string se
     hp = (struct hostent*)gethostbyname("localhost");
 
     if (!hp) {        
-        printf("[>>>>> Sent(%s(%s) -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Server not found)\r\n", sender.c_str(), action.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
+        printf("[>>>>> Sent([%s]%s -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Server not found)\r\n", action.c_str(), sender.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         WSACleanup(); return MSG_ERROR_UNKNOWN_SERVER;
     }
 
     // Creamos el socket...
     conn_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (conn_socket == INVALID_SOCKET) {
-        printf("[>>>>> Sent(%s(%s) -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Wrong socket created)\r\n", sender.c_str(), action.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
+        printf("[>>>>> Sent([%s]%s -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Wrong socket created)\r\n", action.c_str(), sender.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         WSACleanup(); return MSG_ERROR_CREATE_SOCKET;
     }
 
@@ -47,14 +47,14 @@ int Message::sendMessage(Proposal *proposal, unsigned short port, std::string se
 
     // Nos conectamos con el servidor...
     if (connect(conn_socket, (struct sockaddr*) & server, sizeof(server)) == SOCKET_ERROR) {
-        printf("[>>>>> Sent(%s(%s) -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Failed to connect server)\r\n", sender.c_str(), action.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
+        printf("[>>>>> Sent([%s]%s -> %s(%d))    - FAILED] Proposal[%d. %d, %s](Failed to connect server)\r\n", action.c_str(), sender.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
         closesocket(conn_socket);
         WSACleanup(); return MSG_ERROR_FAILED_TO_CONNECT_SERVER;
     }
     
     memcpy(SendBuff, reinterpret_cast<const char *>(proposal), sizeof(Proposal));    
             
-    printf("[>>>>> Sent(%s(%s) -> %s(%d))    - OK] Proposal[%d. %d, %s]\r\n", sender.c_str(), action.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
+    printf("[>>>>> Sent([%s]%s -> %s(%d))    - OK] Proposal[%d. %d, %s]\r\n", action.c_str(), sender.c_str(), receiver.c_str(), port, proposal->get_proposal_number(), proposal->get_id(), proposal->get_value().c_str());
     send(conn_socket, SendBuff, sizeof(Proposal), 0);    
 
     // Cerramos el socket y liberamos la DLL de sockets

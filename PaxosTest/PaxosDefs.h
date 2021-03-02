@@ -8,7 +8,7 @@
 #define PORT_RECEIVER1_SUFIX				20
 #define PORT_RECEIVER2_SUFIX				30
 #define NUM_NODES							3
-#define MAJORITY							( ( NUM_NODES % 2 ) + 1 )
+#define MAJORITY							1//( ( NUM_NODES % 2 ) + 1 )
 #define TO_RETRY							5000 // 5seg
 
 

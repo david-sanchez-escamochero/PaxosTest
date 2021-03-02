@@ -16,16 +16,17 @@ public:
 	void receive_response_to_prepare_request();
 
 private:
-	Message message_;
-	uint32_t id_;
-	uint32_t current_proposal_number_;	
-	uint32_t port_send_;
-	uint32_t  port_receive1_;
-	uint32_t  port_receive2_;
-	uint32_t  count_response_to_prepare_request_;
-	uint32_t  send_accept_sent_without_error_;
-	Proposal  new_proposal_;
+	Message		message_;
+	uint32_t	id_;
+	uint32_t	current_proposal_number_;	
+	uint32_t	port_send_;
+	uint32_t	port_receive1_;
+	uint32_t	port_receive2_;
+	uint32_t	count_response_to_prepare_request_;
+	uint32_t	send_accept_sent_without_error_;
+	Proposal	new_proposal_;
+	std::string new_value_;
 
-	void	 create_new_proposal(std::string value);
+	void create_new_proposal(std::string value);
 };
 

@@ -44,7 +44,7 @@ void Proposer::receive_response_to_prepare_request()
 {
 	while (true) {
 		Proposal proposal;
-		int32_t result = message_.receiveMessage(&proposal, port_receive1_, std::string(PROPOSER) + "." + std::to_string(id_));
+		int32_t result = message_.receiveMessage(&proposal, port_receive1_, "[" + std::string(ACTION_RESPONSE_TO_PREPARE_REQUEST) + "]" + std::string(PROPOSER) + "." + std::to_string(id_));
 		if (result != MSG_SUCCESS) {
 			printf("Proposer::receive_response_to_prepare_request - FAILED!!! receive message %d\r\n", result);
 		}
@@ -58,15 +58,16 @@ void Proposer::receive_response_to_prepare_request()
 			// Si hemos alcanzado la mayoría...
 			if (count_response_to_prepare_request_ >= MAJORITY) {
 				// Hay una propuesta procensandose...
-				if (proposal.get_none() == true) {
+				if (proposal.get_none() == false) {
 					// Marcamos el número de la propuesta...
 					proposal.set_proposal_number(current_proposal_number_);
 					// Enviamos el mensaje. 
 					send_accept_resquest(&proposal);
 				}
 				// Si todavía no hay ninguna propuesta 
-				else if (proposal.get_none() == false) {
+				else if (proposal.get_none() == true) {
 					// Mandamos nuestra propuesta...
+					new_proposal_.set_value(new_value_);
 					send_accept_resquest(&new_proposal_);
 				}
 			}
@@ -90,14 +91,16 @@ uint32_t  Proposer::send_accept_resquest(Proposal* proposal)
 	return send_accept_sent_without_error_;
 }
 
-void Proposer::create_new_proposal(std::string value) 
+void Proposer::create_new_proposal(std::string value)
 {
 	current_proposal_number_++;
 	new_proposal_.set_id(id_);
 	new_proposal_.set_nack(false);
 	new_proposal_.set_none(false);
-	new_proposal_.set_proposal_number(current_proposal_number_);
-	new_proposal_.set_value(value);
+	new_proposal_.set_proposal_number(current_proposal_number_);	
+	new_proposal_.set_value("");
+
+	new_value_ = value;
 }
 
 
