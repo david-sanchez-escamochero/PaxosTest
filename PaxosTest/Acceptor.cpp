@@ -88,8 +88,8 @@ void Acceptor::receive_accept_request()
 		if (count_accepted_request_ >= MAJORITY) {
 			set_there_is_an_accepted_request(true);
 			int send_decision_sent_without_error = send_decision(&proposal);			
-			std::string str_trace = "[SENT Decision] - OK " + std::to_string(send_decision_sent_without_error) + "/" + std::to_string(NUM_NODES) + "\r\n";
-			log_->trace(str_trace);
+			//std::string str_trace = "[SENT Decision] - OK " + std::to_string(send_decision_sent_without_error) + "/" + std::to_string(NUM_NODES) + "\r\n";
+			//log_->trace(str_trace);
 			if (send_decision_sent_without_error >= MAJORITY) {
 				// Ya podemos pasar a otra cosa. 				
 				count_accepted_request_ = 0;

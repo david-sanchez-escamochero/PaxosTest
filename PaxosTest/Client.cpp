@@ -32,6 +32,13 @@ void Client::read_file() {
     
         while (std::getline(infile, value))
         {            
+
+            printf("Value proposed:%s\r\n", value.c_str());
+            for (int count = 0; count < 3; count++) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                printf("count:%d\r\n", count);
+            }
+
             if (!proposer_->client_request(value)) {
                 log_->trace("Client::read_file - FAILED!!! to client_request\r\n");
             }
