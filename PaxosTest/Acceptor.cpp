@@ -30,10 +30,9 @@ void Acceptor::send_response_to_prepare_request(Proposal *proposal)
 {
 	Message message(log_);
 	// Si no hay nada procesandose...
-	if (!there_is_an_accepted_request_)
+	if (!get_there_is_an_accepted_request())
 		proposal->set_none(true);
 	else {
-		proposal->set_value(value_);
 		proposal->set_proposal_number(proposal_number_);
 		proposal->set_none(false);
 	}
@@ -87,14 +86,14 @@ void Acceptor::receive_accept_request()
 
 		count_accepted_request_++;
 		if (count_accepted_request_ >= MAJORITY) {
-			there_is_an_accepted_request_ = true;
+			set_there_is_an_accepted_request(true);
 			int send_decision_sent_without_error = send_decision(&proposal);			
 			std::string str_trace = "[SENT Decision] - OK " + std::to_string(send_decision_sent_without_error) + "/" + std::to_string(NUM_NODES) + "\r\n";
 			log_->trace(str_trace);
 			if (send_decision_sent_without_error >= MAJORITY) {
-				// Ya podemos pasar a otra cosa. 
-				send_decision(&proposal);
+				// Ya podemos pasar a otra cosa. 				
 				count_accepted_request_ = 0;
+				set_there_is_an_accepted_request(false);
 			}
 		}
 	}
@@ -106,7 +105,7 @@ int Acceptor::send_decision(Proposal* proposal)
 	int send_decision_sent_without_error = 0;
 	// El send_decision tiene que ser enviado a todos los Learners. 
 	for (int id_node = 0; id_node < NUM_NODES; id_node++) {
-		if (message.sendMessage(proposal, PORT_BASE + PORT_LEARNER_SUFIX + PORT_RECEIVER1_SUFIX + id_node, std::string(ACCEPTOR) + "." + std::to_string(id_), ACTION_RESPONSE_TO_PREPARE_REQUEST, std::string(LEARNER) + "." + std::to_string(id_node)) != MSG_SUCCESS) {
+		if (message.sendMessage(proposal, PORT_BASE + PORT_LEARNER_SUFIX + PORT_RECEIVER1_SUFIX + id_node, std::string(ACCEPTOR) + "." + std::to_string(id_), ACTION_DECISION, std::string(LEARNER) + "." + std::to_string(id_node)) != MSG_SUCCESS) {
 			std::string str_trace = "Acceptor::send_decision - FAILED!!! to send_decision id:" + std::to_string(id_) + ", port: " + std::to_string(PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_RECEIVER1_SUFIX + id_node) + "\r\n";
 			log_->trace(str_trace);
 		}
@@ -121,6 +120,7 @@ int Acceptor::send_decision(Proposal* proposal)
 
 bool Acceptor::get_there_is_an_accepted_request()
 {	
+	std::lock_guard<std::mutex> guard(mu_); // RAII
 	return there_is_an_accepted_request_;
 }
 

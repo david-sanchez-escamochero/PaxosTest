@@ -32,7 +32,9 @@ void Client::read_file() {
     
         while (std::getline(infile, value))
         {            
-            proposer_->client_request(value);            
+            if (!proposer_->client_request(value)) {
+                log_->trace("Client::read_file - FAILED!!! to client_request\r\n");
+            }
         }
     }
     else

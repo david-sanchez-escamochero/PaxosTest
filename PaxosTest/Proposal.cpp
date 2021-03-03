@@ -35,6 +35,16 @@ uint32_t Proposal::get_proposal_number()
 	return proposal_number_;
 }
 
+uint32_t Proposal::get_current_proposal_number()
+{
+	return current_proposal_number_;
+}
+
+void Proposal::set_current_proposal_number(uint32_t current_proposal_number)
+{
+	current_proposal_number_ = current_proposal_number;
+}
+
 uint32_t Proposal::get_id() {
 	return id_;
 }
@@ -54,3 +64,5 @@ void Proposal::set_nack(bool nack) {
 bool Proposal::get_nack() {
 	return nack_;
 }
+
+

@@ -30,18 +30,20 @@ void Learner::receive_decision()
 			str_trace = "Learner::receive_decision - FAILED!!! receive message " + std::to_string(result) + "\r\n";
 			log_->trace(str_trace);
 		}
-		else if (current_decision_proposal_.get_proposal_number() == proposal.get_proposal_number()) {
-			count_decision_received_++;
-		}
-		else if (current_decision_proposal_.get_proposal_number() == proposal.get_proposal_number()) {
+		// Si es una propuesta nueva... actualizamos nuestra current_decision_proposal.
+		else if (current_decision_proposal_.get_proposal_number() != proposal.get_proposal_number()) {
 			current_decision_proposal_.set_proposal_number(proposal.get_proposal_number());
 			current_decision_proposal_.set_value(proposal.get_value());
 			count_decision_received_ = 1;
 		}
+		// Si la propuesta es igual a la que ya tenemos... incrementamos "count_decision_received_"
+		else if (current_decision_proposal_.get_proposal_number() == proposal.get_proposal_number()) {
+			count_decision_received_++;
+		}
 
 		if (count_decision_received_ >= MAJORITY) {
 			// Guardar propuesta. 
-			str_trace = "Propuesta ACEPTADA!!!! [" + std::to_string(proposal.get_proposal_number()) + ", " + proposal.get_value() + "]\r\n";
+			str_trace = "\r\n\r\nPropuesta ACEPTADA!!!! [" + std::to_string(proposal.get_proposal_number()) + "." + std::to_string(proposal.get_id()) + ", " + proposal.get_value() + "]\r\n\r\n";
 			log_->trace(str_trace);
 		}
 	}

@@ -23,8 +23,7 @@ private:
 	uint32_t port_receive1_;
 	uint32_t port_receive2_;
 	
-	Proposal proposal_;
-	std::string value_;
+	Proposal proposal_;	
 	bool there_is_an_accepted_request_;
 	uint32_t count_accepted_request_; 
 

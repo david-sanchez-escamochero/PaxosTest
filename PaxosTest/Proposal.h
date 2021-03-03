@@ -13,6 +13,8 @@ public:
 	void set_id(uint32_t id);
 	std::string get_value();
 	uint32_t get_proposal_number();
+	uint32_t get_current_proposal_number();
+	void	 set_current_proposal_number(uint32_t current_proposal_number);
 	uint32_t get_id();
 	void set_none(bool none);
 	bool get_none();
@@ -25,5 +27,6 @@ private:
 	uint32_t id_;	
 	bool none_; 
 	bool nack_;
+	uint32_t current_proposal_number_;
 };
 

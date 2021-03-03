@@ -31,7 +31,7 @@ int Message::sendMessage(Proposal *proposal, unsigned short port, std::string se
     hp = (struct hostent*)gethostbyname("localhost");
 
     if (!hp) {      
-        str_trace = "[<<<<< Sent([" + action + "]" + sender + " -> " + receiver + "(" + std::to_string(port) + "))    - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Server not found)\r\n";
+        str_trace = "[<<<<< Sent([" + action + "]" + sender + " -> " + receiver + "(" + std::to_string(port) + "))    - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Server not found)\r\n";
         log_->trace(str_trace);
         WSACleanup(); return MSG_ERROR_UNKNOWN_SERVER;
     }
@@ -39,7 +39,7 @@ int Message::sendMessage(Proposal *proposal, unsigned short port, std::string se
     // Creamos el socket...
     conn_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (conn_socket == INVALID_SOCKET) {
-        str_trace = "[<<<<< Sent([" + action + "]" + sender + " -> " + receiver + "(" + std::to_string(port) + "))    - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Wrong socket created)\r\n";
+        str_trace = "[<<<<< Sent([" + action + "]" + sender + " -> " + receiver + "(" + std::to_string(port) + "))    - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Wrong socket created)\r\n";
         log_->trace(str_trace);
         WSACleanup(); return MSG_ERROR_CREATE_SOCKET;
     }
@@ -51,7 +51,7 @@ int Message::sendMessage(Proposal *proposal, unsigned short port, std::string se
 
     // Nos conectamos con el servidor...
     if (connect(conn_socket, (struct sockaddr*) & server, sizeof(server)) == SOCKET_ERROR) {
-        str_trace = "[<<<<< Sent([" + action + "]" + sender + " -> " + receiver + "(" + std::to_string(port) + "))    - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Failed to connect server)\r\n";
+        str_trace = "[<<<<< Sent([" + action + "]" + sender + " -> " + receiver + "(" + std::to_string(port) + "))    - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Failed to connect server)\r\n";
         log_->trace(str_trace);
         closesocket(conn_socket);
         WSACleanup(); return MSG_ERROR_FAILED_TO_CONNECT_SERVER;
@@ -59,7 +59,7 @@ int Message::sendMessage(Proposal *proposal, unsigned short port, std::string se
     
     memcpy(SendBuff, reinterpret_cast<const char *>(proposal), sizeof(Proposal));    
 
-    str_trace = "[<<<<< Sent([" + action + "]" + sender + " -> " + receiver + "(" + std::to_string(port) + "))    - OK] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "]\r\n";
+    str_trace = "[<<<<< Sent([" + action + "]" + sender + " -> " + receiver + "(" + std::to_string(port) + "))    - OK] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "]\r\n";
     log_->trace(str_trace);
     send(conn_socket, SendBuff, sizeof(Proposal), 0);    
 
@@ -83,7 +83,7 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port, std::string
     //Inicializamos la DLL de sockets
     resp = WSAStartup(MAKEWORD(1, 0), &wsaData);
     if (resp) {
-        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Error socket initialization)\r\n";
+        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Error socket initialization)\r\n";
         log_->trace(str_trace);
         return MSG_ERROR_INITIALIZATION_SOCKET;
     }
@@ -93,7 +93,7 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port, std::string
     hp = (struct hostent*)gethostbyname("localhost");
 
     if (!hp) {        
-        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Server not found)\r\n";
+        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Server not found)\r\n";
         log_->trace(str_trace);
         WSACleanup(); return MSG_ERROR_UNKNOWN_SERVER;
     }
@@ -101,7 +101,7 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port, std::string
     // Creamos el socket...
     conn_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (conn_socket == INVALID_SOCKET) {
-        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Wrong socket created)\r\n";
+        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Wrong socket created)\r\n";
         log_->trace(str_trace);
         WSACleanup(); return MSG_ERROR_CREATE_SOCKET;
     }
@@ -114,14 +114,14 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port, std::string
     // Asociamos ip y puerto al socket
     resp = bind(conn_socket, (struct sockaddr*) & server, sizeof(server));
     if (resp == SOCKET_ERROR) {
-        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Failed to connect server)\r\n";
+        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Failed to connect server)\r\n";
         log_->trace(str_trace);
         closesocket(conn_socket); WSACleanup();
         return MSG_ERROR_TO_ASSOCIATE_PORT_AND_IP_SOCKET;
     }
 
     if (listen(conn_socket, 1) == SOCKET_ERROR) {        
-        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Failed to connect server)\r\n";
+        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Failed to connect server)\r\n";
         log_->trace(str_trace);
         closesocket(conn_socket); WSACleanup();
         return MSG_ERROR_TO_ENABLE_INGOING_CONNECTIONS;
@@ -131,7 +131,7 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port, std::string
     stsize = sizeof(struct sockaddr);
     comm_socket = accept(conn_socket, (struct sockaddr*) & client, &stsize);
     if (comm_socket == INVALID_SOCKET) {
-        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Failed to accept ingoing conection)\r\n";
+        str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - FAILED] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "](Failed to accept ingoing conection)\r\n";
         log_->trace(str_trace);
         closesocket(conn_socket); WSACleanup();
         return MSG_ERROR_TO_ACCEPT_INGOING_CONNECTIONS;
@@ -148,8 +148,9 @@ int Message::receiveMessage(Proposal *proposal, unsigned short port, std::string
     proposal->set_none(proposal_aux->get_none());
     proposal->set_proposal_number(proposal_aux->get_proposal_number());
     proposal->set_value(proposal_aux->get_value());
+    proposal->set_current_proposal_number(proposal_aux->get_current_proposal_number());
     
-    str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - OK] Proposal[" + std::to_string(proposal->get_proposal_number()) + ". " + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "]\r\n";
+    str_trace = "[>>>>> Received(" + receiver + "(" + std::to_string(port) + ")) - OK] Proposal[" + std::to_string(proposal->get_proposal_number()) + "." + std::to_string(proposal->get_id()) + ", " + proposal->get_value() + "]\r\n";
     log_->trace(str_trace);
     // Cerramos el socket de la comunicacion
     closesocket(comm_socket);
