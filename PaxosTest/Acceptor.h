@@ -4,11 +4,12 @@
 #include <stdint.h>
 #include "Message.h"
 #include <mutex>
+#include "Log.h"
 
 class Acceptor
 {
 public:
-	void start(uint32_t id);
+	void start(uint32_t id, Log* log);
 	void send_response_to_prepare_request(Proposal* proposal);	
 	void receive_prepare_request();
 	void send_nack_prepare_request(Proposal* proposal);
@@ -21,7 +22,7 @@ private:
 	uint32_t port_send_;
 	uint32_t port_receive1_;
 	uint32_t port_receive2_;
-	Message message_;
+	
 	Proposal proposal_;
 	std::string value_;
 	bool there_is_an_accepted_request_;
@@ -31,5 +32,6 @@ private:
 	std::mutex mu_;
 	bool get_there_is_an_accepted_request();
 	void set_there_is_an_accepted_request(bool there_is_an_accepted_request);
+	Log *log_;
 };
 

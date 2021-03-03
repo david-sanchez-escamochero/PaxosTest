@@ -2,6 +2,7 @@
 
 #include <string>
 #include "Proposal.h"
+#include "Log.h"
 
 #define MSG_SUCCESS                                 0
 #define MSG_ERROR_INITIALIZATION_SOCKET             1
@@ -17,10 +18,12 @@
 class Message
 {
 public: 
+	Message(Log* log);
 	int sendMessage(Proposal* proposal, unsigned short port, std::string sender, std::string action, std::string receiver);
 	int receiveMessage(Proposal *proposal, unsigned short port, std::string receiver);
-	void start();
+	
 private: 
 	char SendBuff[512], RecvBuff[512];
+	Log *log_;
 };
 

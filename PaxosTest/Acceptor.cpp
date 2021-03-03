@@ -6,7 +6,7 @@
 
 
 
-void Acceptor::start(uint32_t id)
+void Acceptor::start(uint32_t id, Log* log)
 {
 	port_send_ = PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_SENDER_SUFIX + id;
 	port_receive1_ = PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_RECEIVER1_SUFIX + id;
@@ -20,6 +20,7 @@ void Acceptor::start(uint32_t id)
 
 	count_accepted_request_ = 0;
 	there_is_an_accepted_request_ = false;
+	log_ = log;
 }
 
 
@@ -27,6 +28,7 @@ void Acceptor::start(uint32_t id)
 
 void Acceptor::send_response_to_prepare_request(Proposal *proposal)
 {
+	Message message(log_);
 	// Si no hay nada procesandose...
 	if (!there_is_an_accepted_request_)
 		proposal->set_none(true);
@@ -36,8 +38,10 @@ void Acceptor::send_response_to_prepare_request(Proposal *proposal)
 		proposal->set_none(false);
 	}
 
-	if (message_.sendMessage(proposal, PORT_BASE + PORT_PROPOSER_SUFIX + PORT_RECEIVER1_SUFIX + proposal->get_id(), std::string(ACCEPTOR) + "." + std::to_string(id_), ACTION_RESPONSE_TO_PREPARE_REQUEST, std::string(PROPOSER) + "." + std::to_string(proposal->get_id())) != MSG_SUCCESS)
-		printf("Acceptor::response_to_prepare_request - FAILED send message to port %d id %d\r\n", PORT_BASE + PORT_PROPOSER_SUFIX + PORT_RECEIVER1_SUFIX + proposal->get_id(), proposal->get_id());
+	if (message.sendMessage(proposal, PORT_BASE + PORT_PROPOSER_SUFIX + PORT_RECEIVER1_SUFIX + proposal->get_id(), std::string(ACCEPTOR) + "." + std::to_string(id_), ACTION_RESPONSE_TO_PREPARE_REQUEST, std::string(PROPOSER) + "." + std::to_string(proposal->get_id())) != MSG_SUCCESS) {
+		std::string str_trace = "Acceptor::response_to_prepare_request - FAILED send message to port " + std::to_string(PORT_BASE + PORT_PROPOSER_SUFIX + PORT_RECEIVER1_SUFIX + proposal->get_id()) + " id " + std::to_string(proposal->get_id()) + "\r\n";
+		log_->trace(str_trace);
+	}
 
 }
 
@@ -46,18 +50,23 @@ void Acceptor::send_response_to_prepare_request(Proposal *proposal)
 // La propuesta es menor que las anteriores.
 void Acceptor::send_nack_prepare_request(Proposal* proposal) {
 
+	Message message(log_);
 	proposal->set_nack(true);
-	if (message_.sendMessage(proposal, PORT_BASE + PORT_PROPOSER_SUFIX + PORT_RECEIVER1_SUFIX + proposal->get_id(), std::string(ACCEPTOR) + "." + std::to_string(id_), ACTION_NACK_TO_PREPARE_REQUEST, std::string(PROPOSER) + "." + std::to_string(proposal->get_id())) != MSG_SUCCESS)
-		printf("Acceptor::nack_prepare_request - FAILED send message to port %d id %d\r\n", PORT_BASE + PORT_PROPOSER_SUFIX + PORT_RECEIVER1_SUFIX + proposal->get_id(), proposal->get_id());
+	if (message.sendMessage(proposal, PORT_BASE + PORT_PROPOSER_SUFIX + PORT_RECEIVER1_SUFIX + proposal->get_id(), std::string(ACCEPTOR) + "." + std::to_string(id_), ACTION_NACK_TO_PREPARE_REQUEST, std::string(PROPOSER) + "." + std::to_string(proposal->get_id())) != MSG_SUCCESS) {
+		std::string str_trace = "Acceptor::nack_prepare_request - FAILED send message to port " + std::to_string(PORT_BASE + PORT_PROPOSER_SUFIX + PORT_RECEIVER1_SUFIX + proposal->get_id()) + " id " + std::to_string(proposal->get_id()) + "\r\n";
+
+	}
 }
 
 void Acceptor::receive_prepare_request()
 {
+	Message message(log_);
 	while (true) {
 		Proposal proposal;
-		int32_t result = message_.receiveMessage(&proposal, port_receive1_, "[" + std::string(ACTION_PREPARE_REQUEST) + "]" + std::string(ACCEPTOR) + "." + std::to_string(id_));
+		int32_t result = message.receiveMessage(&proposal, port_receive1_, "[" + std::string(ACTION_PREPARE_REQUEST) + "]" + std::string(ACCEPTOR) + "." + std::to_string(id_));
 		if (result != MSG_SUCCESS) {
-			printf("Acceptor::receive_prepare_request - FAILED!!! receive message %d\r\n", result);
+			std::string str_trace = "Acceptor::receive_prepare_request - FAILED!!! receive message " + std::to_string(result) + "\r\n";
+			log_->trace(str_trace);
 		}
 		else if (proposal.get_proposal_number() > proposal_number_) {
 			proposal_number_ = proposal.get_proposal_number();
@@ -71,15 +80,17 @@ void Acceptor::receive_prepare_request()
 
 void Acceptor::receive_accept_request()
 {	
+	Message message(log_);
 	while (true) {
 		Proposal proposal;
-		int32_t result = message_.receiveMessage(&proposal, port_receive2_, "[" + std::string(ACTION_ACCEPT_REQUEST) + "]" + std::string(ACCEPTOR) + "." + std::to_string(id_));
+		int32_t result = message.receiveMessage(&proposal, port_receive2_, "[" + std::string(ACTION_ACCEPT_REQUEST) + "]" + std::string(ACCEPTOR) + "." + std::to_string(id_));
 
 		count_accepted_request_++;
 		if (count_accepted_request_ >= MAJORITY) {
 			there_is_an_accepted_request_ = true;
-			int send_decision_sent_without_error = send_decision(&proposal);
-			printf("[SENT Decision] - OK %d/%d\r\n", send_decision_sent_without_error, NUM_NODES);
+			int send_decision_sent_without_error = send_decision(&proposal);			
+			std::string str_trace = "[SENT Decision] - OK " + std::to_string(send_decision_sent_without_error) + "/" + std::to_string(NUM_NODES) + "\r\n";
+			log_->trace(str_trace);
 			if (send_decision_sent_without_error >= MAJORITY) {
 				// Ya podemos pasar a otra cosa. 
 				send_decision(&proposal);
@@ -91,11 +102,13 @@ void Acceptor::receive_accept_request()
 
 int Acceptor::send_decision(Proposal* proposal) 
 {		
+	Message message(log_);
 	int send_decision_sent_without_error = 0;
 	// El send_decision tiene que ser enviado a todos los Learners. 
 	for (int id_node = 0; id_node < NUM_NODES; id_node++) {
-		if (message_.sendMessage(proposal, PORT_BASE + PORT_LEARNER_SUFIX + PORT_RECEIVER1_SUFIX + id_node, std::string(ACCEPTOR) + "." + std::to_string(id_), ACTION_RESPONSE_TO_PREPARE_REQUEST, std::string(LEARNER) + "." + std::to_string(id_node)) != MSG_SUCCESS) {
-			printf("Acceptor::send_decision - FAILED!!! to send_decision id:%d, port:%d\n", id_, PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_RECEIVER1_SUFIX + id_node);
+		if (message.sendMessage(proposal, PORT_BASE + PORT_LEARNER_SUFIX + PORT_RECEIVER1_SUFIX + id_node, std::string(ACCEPTOR) + "." + std::to_string(id_), ACTION_RESPONSE_TO_PREPARE_REQUEST, std::string(LEARNER) + "." + std::to_string(id_node)) != MSG_SUCCESS) {
+			std::string str_trace = "Acceptor::send_decision - FAILED!!! to send_decision id:" + std::to_string(id_) + ", port: " + std::to_string(PORT_BASE + PORT_ACCEPTOR_SUFIX + PORT_RECEIVER1_SUFIX + id_node) + "\r\n";
+			log_->trace(str_trace);
 		}
 		else {
 			send_decision_sent_without_error++;

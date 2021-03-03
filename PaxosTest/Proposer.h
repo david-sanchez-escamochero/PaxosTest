@@ -4,19 +4,19 @@
 #include <stdint.h>
 #include "Message.h"
 #include "Proposal.h"
+#include "Log.h"
 
 class Proposer
 {
 public:
-	void start(uint32_t id);
+	void start(uint32_t id, Log* log);
 	uint32_t  send_prepare_request(std::string value);
 	uint32_t  send_accept_resquest(Proposal *proposal);
 	bool client_request(std::string value);
 	
 	void receive_response_to_prepare_request();
 
-private:
-	Message		message_;
+private:	
 	uint32_t	id_;
 	uint32_t	current_proposal_number_;	
 	uint32_t	port_send_;
@@ -26,6 +26,7 @@ private:
 	uint32_t	send_accept_sent_without_error_;
 	Proposal	new_proposal_;
 	std::string new_value_;
+	Log			*log_;
 
 	void create_new_proposal(std::string value);
 };
